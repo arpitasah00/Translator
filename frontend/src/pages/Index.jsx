@@ -1,0 +1,64 @@
+import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import TranslatorCard from "@/components/TranslatorCard";
+
+const Index = () => {
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      <Navbar />
+
+      <main className="container mx-auto px-4 py-12">
+        {/* Hero */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-12 text-center"
+        >
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground">
+            <Sparkles className="h-3.5 w-3.5" />
+            Translate into 15+ languages
+          </div>
+          <h1 className="mb-3 font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+            Break language barriers
+            <br />
+            <span className="text-primary">instantly</span>
+          </h1>
+          <p className="mx-auto max-w-md text-muted-foreground">
+            Fast, accurate translations across multiple languages. Type, paste, or speak — get results in seconds.
+          </p>
+        </motion.div>
+
+        {/* Translator */}
+        <TranslatorCard />
+
+        {/* Supported languages preview */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="mt-16 text-center"
+        >
+          <p className="mb-4 text-sm font-medium text-muted-foreground">Supported Languages</p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {["🇬🇧 English", "🇪🇸 Spanish", "🇫🇷 French", "🇩🇪 German", "🇯🇵 Japanese", "🇨🇳 Chinese", "🇰🇷 Korean", "🇮🇳 Hindi", "🇸🇦 Arabic", "🇷🇺 Russian"].map(
+              (lang) => (
+                <span
+                  key={lang}
+                  className="rounded-full border border-border/50 bg-card px-3 py-1.5 text-sm text-foreground shadow-sm"
+                >
+                  {lang}
+                </span>
+              )
+            )}
+          </div>
+        </motion.div>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+export default Index;
