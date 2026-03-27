@@ -1,14 +1,20 @@
+
 from flask import Flask, request, jsonify
 import requests
 from flask_cors import CORS
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import os
+from dotenv import load_dotenv
+
 
 app = Flask(__name__)
 CORS(app)
+load_dotenv()
+
 
 # 🔐 Gemini API Key
-API_KEY = "AIzaSyAc3tS9AxwVrJsKtmfzRSXxXq0MhjUxXjo"
+API_KEY = os.environ.get("API_KEY")
 url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
 
 # 🔌 PostgreSQL connection

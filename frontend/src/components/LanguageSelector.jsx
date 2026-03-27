@@ -36,11 +36,11 @@ const LanguageSelector = ({ value, onChange, showDetect = false }) => {
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="h-10 w-full justify-between gap-2 rounded-lg border border-border/50 bg-card px-3 font-body text-sm font-medium text-foreground hover:bg-accent"
+          className="h-10 gap-2 rounded-lg border border-border/50 bg-card px-3 font-body text-sm font-medium text-foreground hover:bg-accent"
         >
           <span className="text-base">{selected?.flag}</span>
-          <span className="flex-1 truncate text-left">{selected?.name}</span>
-          <ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <span>{selected?.name}</span>
+          <ChevronDown className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-56 p-2" align="start">
