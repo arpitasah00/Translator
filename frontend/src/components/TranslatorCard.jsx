@@ -32,14 +32,32 @@ const TranslatorCard = () => {
   const [translatedText, setTranslatedText] = useState("");
   const [isTranslating, setIsTranslating] = useState(false);
 
-  const handleTranslate = useCallback(() => {
-    if (!sourceText.trim()) return;
-    setIsTranslating(true);
-    setTimeout(() => {
-      setTranslatedText(mockTranslate(sourceText, targetLang));
-      setIsTranslating(false);
-    }, 600);
-  }, [sourceText, targetLang]);
+const handleTranslate = useCallback(async () => {
+  if (!sourceText.trim()) return;
+
+  setIsTranslating(true);
+
+  try {
+    const res = await fetch("http://127.0.0.1:5000/translate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: sourceText,
+        target_language: targetLang
+      })
+    });
+
+    const data = await res.json();
+    setTranslatedText(data.translated);
+  } catch (error) {
+    console.error(error);
+    toast.error("Translation failed!");
+  }
+
+  setIsTranslating(false);
+}, [sourceText, targetLang]);
 
   const handleSwap = () => {
     if (sourceLang === "auto") return;
