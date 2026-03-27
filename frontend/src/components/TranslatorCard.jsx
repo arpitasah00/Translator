@@ -77,8 +77,10 @@ const TranslatorCard = () => {
     >
       <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-lg">
         {/* Language bar */}
-        <div className="flex items-center gap-2 border-b border-border/40 bg-muted/30 px-4 py-3">
-          <LanguageSelector value={sourceLang} onChange={setSourceLang} showDetect />
+        <div className="flex flex-wrap items-center gap-2 border-b border-border/40 bg-muted/30 px-4 py-3">
+          <div className="flex-1 min-w-[0]">
+            <LanguageSelector value={sourceLang} onChange={setSourceLang} showDetect />
+          </div>
           <Button
             variant="ghost"
             size="icon"
@@ -88,7 +90,9 @@ const TranslatorCard = () => {
           >
             <ArrowRightLeft className="h-4 w-4" />
           </Button>
-          <LanguageSelector value={targetLang} onChange={setTargetLang} />
+          <div className="flex-1 min-w-[0]">
+            <LanguageSelector value={targetLang} onChange={setTargetLang} />
+          </div>
         </div>
 
         {/* Translation areas */}
