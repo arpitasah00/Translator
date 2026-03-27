@@ -1,4 +1,4 @@
-import { Languages, LogIn, History } from "lucide-react";
+import { LogIn, History } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -15,12 +15,11 @@ const Navbar = () => {
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <Languages className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="font-display text-xl font-bold tracking-tight text-foreground">
-            LinguaFlow
-          </span>
+          <img
+            src="/logo.png"
+            alt="MultiLingo logo"
+            className="navbar-logo w-auto"
+          />
         </Link>
 
         <div className="flex items-center gap-2">
