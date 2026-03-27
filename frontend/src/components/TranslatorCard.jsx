@@ -32,14 +32,32 @@ const TranslatorCard = () => {
   const [translatedText, setTranslatedText] = useState("");
   const [isTranslating, setIsTranslating] = useState(false);
 
-  const handleTranslate = useCallback(() => {
-    if (!sourceText.trim()) return;
-    setIsTranslating(true);
-    setTimeout(() => {
-      setTranslatedText(mockTranslate(sourceText, targetLang));
-      setIsTranslating(false);
-    }, 600);
-  }, [sourceText, targetLang]);
+const handleTranslate = useCallback(async () => {
+  if (!sourceText.trim()) return;
+
+  setIsTranslating(true);
+
+  try {
+    const res = await fetch("http://127.0.0.1:5000/translate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: sourceText,
+        target_language: targetLang
+      })
+    });
+
+    const data = await res.json();
+    setTranslatedText(data.translated);
+  } catch (error) {
+    console.error(error);
+    toast.error("Translation failed!");
+  }
+
+  setIsTranslating(false);
+}, [sourceText, targetLang]);
 
   const handleSwap = () => {
     if (sourceLang === "auto") return;
@@ -77,10 +95,8 @@ const TranslatorCard = () => {
     >
       <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-lg">
         {/* Language bar */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-border/40 bg-muted/30 px-4 py-3">
-          <div className="flex-1 min-w-[0]">
-            <LanguageSelector value={sourceLang} onChange={setSourceLang} showDetect />
-          </div>
+        <div className="flex items-center gap-2 border-b border-border/40 bg-muted/30 px-4 py-3">
+          <LanguageSelector value={sourceLang} onChange={setSourceLang} showDetect />
           <Button
             variant="ghost"
             size="icon"
@@ -90,9 +106,7 @@ const TranslatorCard = () => {
           >
             <ArrowRightLeft className="h-4 w-4" />
           </Button>
-          <div className="flex-1 min-w-[0]">
-            <LanguageSelector value={targetLang} onChange={setTargetLang} />
-          </div>
+          <LanguageSelector value={targetLang} onChange={setTargetLang} />
         </div>
 
         {/* Translation areas */}

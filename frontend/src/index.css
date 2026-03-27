@@ -15,8 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 25% 10%;
 
-    /* Brand colors tuned to MultiLingo logo (blue → purple) */
-    --primary: 265 85% 56%;
+    --primary: 174 72% 40%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 15% 92%;
@@ -25,15 +24,15 @@
     --muted: 220 15% 94%;
     --muted-foreground: 220 10% 50%;
 
-    --accent: 265 100% 96%;
-    --accent-foreground: 265 70% 40%;
+    --accent: 174 50% 92%;
+    --accent-foreground: 174 72% 25%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 15% 88%;
     --input: 220 15% 88%;
-    --ring: 265 85% 56%;
+    --ring: 174 72% 40%;
 
     --radius: 0.75rem;
 
@@ -44,16 +43,16 @@
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 265 85% 56%;
+    --sidebar-ring: 174 72% 40%;
 
     /* Custom tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(220 85% 55%), hsl(280 80% 60%));
+    --gradient-primary: linear-gradient(135deg, hsl(174 72% 40%), hsl(190 80% 45%));
     --gradient-hero: linear-gradient(135deg, hsl(220 25% 8%), hsl(220 30% 14%));
-    --shadow-glow: 0 0 40px hsl(265 85% 56% / 0.15);
+    --shadow-glow: 0 0 40px hsl(174 72% 40% / 0.15);
     --shadow-card: 0 4px 24px hsl(220 25% 10% / 0.06);
     --translator-bg: 220 20% 96%;
     --translator-input: 0 0% 100%;
-    --translator-output: 265 40% 97%;
+    --translator-output: 174 30% 97%;
   }
 
   .dark {
@@ -66,7 +65,7 @@
     --popover: 220 25% 12%;
     --popover-foreground: 210 20% 92%;
 
-    --primary: 265 80% 65%;
+    --primary: 174 72% 45%;
     --primary-foreground: 220 25% 8%;
 
     --secondary: 220 20% 18%;
@@ -75,24 +74,24 @@
     --muted: 220 20% 16%;
     --muted-foreground: 220 10% 55%;
 
-    --accent: 265 35% 20%;
-    --accent-foreground: 265 90% 70%;
+    --accent: 174 40% 15%;
+    --accent-foreground: 174 72% 60%;
 
     --destructive: 0 62% 30%;
     --destructive-foreground: 210 20% 92%;
 
     --border: 220 20% 18%;
     --input: 220 20% 18%;
-    --ring: 265 80% 65%;
+    --ring: 174 72% 45%;
 
     --sidebar-background: 220 25% 10%;
     --sidebar-foreground: 210 20% 92%;
-    --sidebar-primary: 265 80% 60%;
+    --sidebar-primary: 174 72% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 20% 15%;
     --sidebar-accent-foreground: 210 20% 92%;
     --sidebar-border: 220 20% 18%;
-    --sidebar-ring: 265 80% 65%;
+    --sidebar-ring: 174 72% 45%;
 
     --gradient-hero: linear-gradient(135deg, hsl(220 25% 6%), hsl(220 30% 10%));
     --translator-bg: 220 25% 10%;
@@ -112,49 +111,5 @@
 
   h1, h2, h3, h4 {
     @apply font-display;
-  }
-}
-
-/* Scrollbar styled with brand (logo) color */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--primary)) transparent;
-}
-
-*::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-*::-webkit-scrollbar-track {
-  background-color: transparent;
-}
-
-*::-webkit-scrollbar-thumb {
-  background-color: hsl(var(--primary));
-  border-radius: 9999px;
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background-color: hsl(var(--primary) / 0.85);
-}
-
-@layer components {
-  .navbar-logo {
-    height: 2.25rem; /* ~36px on mobile */
-  }
-
-  @media (min-width: 768px) {
-    .navbar-logo {
-      height: 2.75rem; /* ~44px on desktop */
-    }
-  }
-
-  .footer-logo {
-    height: 2.25rem; /* keep footer logo slightly smaller but readable */
-  }
-
-  .auth-logo {
-    height: 3rem; /* prominent logo above sign-in/sign-up card */
   }
 }
