@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify
 import requests
 from flask_cors import CORS
@@ -13,11 +12,11 @@ CORS(app)
 load_dotenv()
 
 
-# 🔐 Gemini API Key
+# Gemini API Key
 API_KEY = os.environ.get("API_KEY")
 url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
 
-# 🔌 PostgreSQL connection
+# PostgreSQL connection
 conn = psycopg2.connect(
     host="localhost",
     database="chat_translator_db",
@@ -51,7 +50,7 @@ def translate():
     
     translated = translate_text(message, target_language)
     
-    # 🔥 Save to DB
+    # Save to DB
     try:
         cursor.execute(
             "INSERT INTO chats (original_text, translated_text, target_language) VALUES (%s, %s, %s)",

@@ -17,14 +17,16 @@ const Index = () => {
           transition={{ duration: 0.5 }}
           className="mb-12 text-center"
         >
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground">
-            <Sparkles className="h-3.5 w-3.5" />
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-accent/35 px-4 py-1.5 text-sm font-medium text-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse-glow" />
             Translate into 15+ languages
           </div>
           <h1 className="mb-3 font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
             Break language barriers
             <br />
-            <span className="text-primary">instantly</span>
+            <span className="bg-[linear-gradient(135deg,_hsl(220_85%_55%),_hsl(280_80%_60%))] bg-clip-text text-transparent">
+              instantly
+            </span>
           </h1>
           <p className="mx-auto max-w-md text-muted-foreground">
             Fast, accurate translations across multiple languages. Type, paste, or speak — get results in seconds.

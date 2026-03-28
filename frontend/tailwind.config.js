@@ -88,8 +88,16 @@ const config = {
           to: { height: "0" },
         },
         "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 20px hsl(174 72% 40% / 0.1)" },
-          "50%": { boxShadow: "0 0 40px hsl(174 72% 40% / 0.25)" },
+          "0%, 100%": {
+            boxShadow: "0 0 10px hsl(265 85% 56% / 0.15)",
+            transform: "scale(1)",
+            opacity: "0.85",
+          },
+          "50%": {
+            boxShadow: "0 0 28px hsl(265 85% 56% / 0.45)",
+            transform: "scale(1.25)",
+            opacity: "1",
+          },
         },
       },
       animation: {

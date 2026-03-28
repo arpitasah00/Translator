@@ -36,7 +36,7 @@ const LanguageSelector = ({ value, onChange, showDetect = false }) => {
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="h-10 gap-2 rounded-lg border border-border/50 bg-card px-3 font-body text-sm font-medium text-foreground hover:bg-accent"
+          className="h-10 gap-2 rounded-lg border border-border/50 bg-card px-3 font-body text-sm font-medium text-foreground hover:bg-accent/35"
         >
           <span className="text-base">{selected?.flag}</span>
           <span>{selected?.name}</span>
@@ -62,7 +62,7 @@ const LanguageSelector = ({ value, onChange, showDetect = false }) => {
                 setOpen(false);
                 setSearch("");
               }}
-              className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-accent"
+              className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-accent/35"
             >
               <span>{lang.flag}</span>
               <span className="flex-1 text-left">{lang.name}</span>
