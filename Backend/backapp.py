@@ -22,7 +22,7 @@ conn = psycopg2.connect(
     host="localhost",
     database="chat_translator_db",
     user="postgres",
-    password="Dibs@PostgreSQL_01"
+    password="Arpi@123#"
 )
 cursor = conn.cursor(cursor_factory=RealDictCursor)
 

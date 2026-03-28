@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Languages, Mail, Lock, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,8 +37,12 @@ const Login = () => {
         <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-lg">
           {/* Header */}
           <div className="border-b border-border/40 bg-muted/30 px-6 py-8 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-md">
-              <Languages className="h-7 w-7 text-primary-foreground" />
+            <div className="mx-auto mb-4 flex items-center justify-center">
+              <img
+                src="/logo.png"
+                alt="MultiLingo logo"
+                className="auth-logo w-auto"
+              />
             </div>
             <h1 className="font-display text-2xl font-bold text-foreground">
               {isSignUp ? "Create account" : "Welcome back"}
