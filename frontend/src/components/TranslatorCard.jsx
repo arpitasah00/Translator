@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import LanguageSelector from "./LanguageSelector";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
 
 const MOCK_TRANSLATIONS = {
   en: {
@@ -85,7 +86,7 @@ function mockTranslate(text, targetLang) {
   return text;
 }
 
-const TranslatorCard = () => {
+const TranslatorCard = ({ onRequireAuth }) => {
   const [sourceLang, setSourceLang] = useState("auto");
   const [targetLang, setTargetLang] = useState("es");
   const [sourceText, setSourceText] = useState("");
@@ -95,29 +96,34 @@ const TranslatorCard = () => {
   const handleTranslate = useCallback(async () => {
     if (!sourceText.trim()) return;
 
+    const isLoggedIn =
+      typeof window !== "undefined" &&
+      localStorage.getItem("isLoggedIn") === "true";
+
+    if (!isLoggedIn) {
+      if (onRequireAuth) {
+        onRequireAuth();
+      }
+      toast.message("Please sign in to translate.");
+      return;
+    }
+
     setIsTranslating(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/translate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: sourceText,
-          target_language: targetLang,
-        }),
+      const res = await api.post("/translate", {
+        message: sourceText,
+        target_language: targetLang,
       });
-
-      const data = await res.json();
+      const data = res.data;
       setTranslatedText(data.translated);
     } catch (error) {
       console.error(error);
       toast.error("Translation failed!");
+    } finally {
+      setIsTranslating(false);
     }
-
-    setIsTranslating(false);
-  }, [sourceText, targetLang]);
+  }, [sourceText, targetLang, onRequireAuth]);
 
   const handleSwap = () => {
     if (sourceLang === "auto") return;

@@ -1,11 +1,40 @@
+import { useEffect, useState } from "react";
 import { LogIn, History } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
 
-const Navbar = () => {
+const Navbar = ({ onAuthClick }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("isLoggedIn") === "true";
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const syncAuth = () => {
+      setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+    };
+
+    const handleStorage = (event) => {
+      if (event.key === "isLoggedIn") {
+        syncAuth();
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("auth-changed", syncAuth);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("auth-changed", syncAuth);
+    };
+  }, []);
 
   return (
     <motion.nav
@@ -32,12 +61,42 @@ const Navbar = () => {
               </Link>
             </Button>
           )}
-          <Button variant="default" size="sm" asChild>
-            <Link to="/login" className="gap-2">
+          {isLoggedIn ? (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={async () => {
+                try {
+                  await api.post("/auth/logout");
+                } catch (e) {
+                  // ignore backend logout errors for now
+                } finally {
+                  localStorage.removeItem("authToken");
+                  localStorage.removeItem("isLoggedIn");
+                  setIsLoggedIn(false);
+                  navigate("/");
+                }
+              }}
+            >
+              <span>Logout</span>
+            </Button>
+          ) : (
+            <Button
+              variant="default"
+              size="sm"
+              className="gap-2"
+              onClick={() => {
+                if (onAuthClick) {
+                  onAuthClick();
+                } else {
+                  navigate("/");
+                }
+              }}
+            >
               <LogIn className="h-4 w-4" />
               <span>Sign In</span>
-            </Link>
-          </Button>
+            </Button>
+          )}
         </div>
       </div>
     </motion.nav>

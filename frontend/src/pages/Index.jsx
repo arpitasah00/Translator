@@ -1,13 +1,16 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TranslatorCard from "@/components/TranslatorCard";
+import AuthDialog from "@/components/AuthDialog";
 
 const Index = () => {
+  const [authOpen, setAuthOpen] = useState(false);
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Navbar />
+      <Navbar onAuthClick={() => setAuthOpen(true)} />
 
       <main className="container mx-auto px-4 py-12">
         {/* Hero */}
@@ -34,7 +37,7 @@ const Index = () => {
         </motion.div>
 
         {/* Translator */}
-        <TranslatorCard />
+        <TranslatorCard onRequireAuth={() => setAuthOpen(true)} />
 
         {/* Supported languages preview */}
         <motion.div
@@ -59,6 +62,7 @@ const Index = () => {
         </motion.div>
       </main>
       <Footer />
+      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
     </div>
   );
 };

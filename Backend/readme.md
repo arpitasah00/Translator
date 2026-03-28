@@ -9,3 +9,4 @@
 	
 	py backapp.py
 	
+\c chat_translator_db
