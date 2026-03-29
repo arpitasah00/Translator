@@ -24,6 +24,9 @@ app = Flask(__name__)
 allowed_origins = [
     "http://localhost:8080",
     "http://127.0.0.1:8080",
+    # Vercel production domain
+    "https://translator-phi-lemon.vercel.app",
+    # Vercel preview for main branch
     "https://translator-git-main-arpitas-projects-1afa6e38.vercel.app",
 ]
 CORS(app, resources={r"/*": {"origins": allowed_origins}})
