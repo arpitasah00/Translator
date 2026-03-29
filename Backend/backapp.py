@@ -43,12 +43,19 @@ SMTP_PASS = os.environ.get("SMTP_PASS")
 SMTP_FROM = os.environ.get("SMTP_FROM", SMTP_USER or "")
 SMTP_USE_TLS = os.environ.get("SMTP_USE_TLS", "true").lower() == "true"
 
-# PostgreSQL connection
+# PostgreSQL connection settings
+DB_HOST = os.environ.get("DB_HOST")
+DB_PORT = int(os.environ.get("DB_PORT"))
+DB_NAME = os.environ.get("DB_NAME")
+DB_USER = os.environ.get("DB_USER")
+DB_PASSWORD = os.environ.get("DB_PASSWORD")
+
 conn = psycopg2.connect(
-    host="localhost",
-    database="chat_translator_db",
-    user="postgres",
-    password="Arpi@123#"
+    host=DB_HOST,
+    port=DB_PORT,
+    database=DB_NAME,
+    user=DB_USER,
+    password=DB_PASSWORD,
 )
 cursor = conn.cursor(cursor_factory=RealDictCursor)
 
