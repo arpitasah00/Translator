@@ -32,7 +32,8 @@ const Index = () => {
             </span>
           </h1>
           <p className="mx-auto max-w-md text-muted-foreground">
-            Fast, accurate translations across multiple languages. Type, paste, or speak — get results in seconds.
+            Fast, accurate translations across multiple languages. Type, paste,
+            or speak — get results in seconds.
           </p>
         </motion.div>
 
@@ -46,18 +47,29 @@ const Index = () => {
           transition={{ delay: 0.6 }}
           className="mt-16 text-center"
         >
-          <p className="mb-4 text-sm font-medium text-muted-foreground">Supported Languages</p>
+          <p className="mb-4 text-sm font-medium text-muted-foreground">
+            Supported Languages
+          </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
-            {["🇬🇧 English", "🇪🇸 Spanish", "🇫🇷 French", "🇩🇪 German", "🇯🇵 Japanese", "🇨🇳 Chinese", "🇰🇷 Korean", "🇮🇳 Hindi", "🇸🇦 Arabic", "🇷🇺 Russian"].map(
-              (lang) => (
-                <span
-                  key={lang}
-                  className="rounded-full border border-border/50 bg-card px-3 py-1.5 text-sm text-foreground shadow-sm"
-                >
-                  {lang}
-                </span>
-              )
-            )}
+            {[
+              "🇬🇧 English",
+              "🇪🇸 Spanish",
+              "🇫🇷 French",
+              "🇩🇪 German",
+              "🇯🇵 Japanese",
+              "🇨🇳 Chinese",
+              "🇰🇷 Korean",
+              "🇮🇳 Hindi",
+              "🇸🇦 Arabic",
+              "🇷🇺 Russian",
+            ].map((lang) => (
+              <span
+                key={lang}
+                className="rounded-full border border-border/50 bg-card px-3 py-1.5 text-sm text-foreground shadow-sm"
+              >
+                {lang}
+              </span>
+            ))}
           </div>
         </motion.div>
       </main>

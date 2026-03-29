@@ -2,89 +2,14 @@ import { ArrowRightLeft, Copy, Volume2, Loader2 } from "lucide-react";
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import LanguageSelector from "./LanguageSelector";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-
-const MOCK_TRANSLATIONS = {
-  en: {
-    hello: "hello",
-    "how are you": "how are you",
-    "good morning": "good morning",
-    "thank you": "thank you",
-    world: "world",
-  },
-  es: {
-    hello: "hola",
-    "how are you": "¿cómo estás?",
-    "good morning": "buenos días",
-    "thank you": "gracias",
-    world: "mundo",
-  },
-  fr: {
-    hello: "bonjour",
-    "how are you": "comment allez-vous?",
-    "good morning": "bonjour",
-    "thank you": "merci",
-    world: "monde",
-  },
-  de: {
-    hello: "hallo",
-    "how are you": "wie geht es Ihnen?",
-    "good morning": "guten Morgen",
-    "thank you": "danke",
-    world: "Welt",
-  },
-  ja: {
-    hello: "こんにちは",
-    "how are you": "お元気ですか？",
-    "good morning": "おはようございます",
-    "thank you": "ありがとう",
-    world: "世界",
-  },
-  zh: {
-    hello: "你好",
-    "how are you": "你好吗？",
-    "good morning": "早上好",
-    "thank you": "谢谢",
-    world: "世界",
-  },
-  ko: {
-    hello: "안녕하세요",
-    "how are you": "어떻게 지내세요?",
-    "good morning": "좋은 아침",
-    "thank you": "감사합니다",
-    world: "세계",
-  },
-  ar: {
-    hello: "مرحبا",
-    "how are you": "كيف حالك؟",
-    "good morning": "صباح الخير",
-    "thank you": "شكرا لك",
-    world: "عالم",
-  },
-  hi: {
-    hello: "नमस्ते",
-    "how are you": "आप कैसे हैं?",
-    "good morning": "सुप्रभात",
-    "thank you": "धन्यवाद",
-    world: "दुनिया",
-  },
-  ru: {
-    hello: "привет",
-    "how are you": "как дела?",
-    "good morning": "доброе утро",
-    "thank you": "спасибо",
-    world: "мир",
-  },
-};
-
-function mockTranslate(text, targetLang) {
-  const lower = text.toLowerCase().trim();
-  const translations = MOCK_TRANSLATIONS[targetLang];
-  if (translations && translations[lower]) return translations[lower];
-  return text;
-}
 
 const TranslatorCard = ({ onRequireAuth }) => {
   const [sourceLang, setSourceLang] = useState("auto");
@@ -92,6 +17,8 @@ const TranslatorCard = ({ onRequireAuth }) => {
   const [sourceText, setSourceText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
   const [isTranslating, setIsTranslating] = useState(false);
+  const [variants, setVariants] = useState(null);
+  const [activeStyle, setActiveStyle] = useState("neutral");
 
   const handleTranslate = useCallback(async () => {
     if (!sourceText.trim()) return;
@@ -109,14 +36,26 @@ const TranslatorCard = ({ onRequireAuth }) => {
     }
 
     setIsTranslating(true);
+    setVariants(null);
+    setActiveStyle("neutral");
 
     try {
-      const res = await api.post("/translate", {
+      const res = await api.post("/translate/variants", {
         message: sourceText,
         target_language: targetLang,
       });
       const data = res.data;
-      setTranslatedText(data.translated);
+      const v = data.variants || null;
+      setVariants(v);
+      if (v && (v.neutral || v.formal || v.informal)) {
+        const base = v.neutral || v.formal || v.informal;
+        setTranslatedText(base);
+        setActiveStyle(
+          v.neutral ? "neutral" : v.formal ? "formal" : "informal",
+        );
+      } else {
+        setTranslatedText(data.translated);
+      }
     } catch (error) {
       console.error(error);
       toast.error("Translation failed!");
@@ -253,6 +192,93 @@ const TranslatorCard = ({ onRequireAuth }) => {
                 </div>
               )}
             </AnimatePresence>
+
+            {variants && !isTranslating && (
+              <div className="mt-3 flex items-center justify-between border-t border-border/30 pt-3 text-xs">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-muted-foreground">Tone:</span>
+                  <Button
+                    variant={activeStyle === "neutral" ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => {
+                      if (variants.neutral) {
+                        setTranslatedText(variants.neutral);
+                        setActiveStyle("neutral");
+                      }
+                    }}
+                  >
+                    Neutral
+                  </Button>
+                  <Button
+                    variant={activeStyle === "formal" ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => {
+                      if (variants.formal) {
+                        setTranslatedText(variants.formal);
+                        setActiveStyle("formal");
+                      }
+                    }}
+                  >
+                    Formal
+                  </Button>
+                  <Button
+                    variant={activeStyle === "informal" ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => {
+                      if (variants.informal) {
+                        setTranslatedText(variants.informal);
+                        setActiveStyle("informal");
+                      }
+                    }}
+                  >
+                    Informal
+                  </Button>
+                </div>
+
+                {variants.synonyms && variants.synonyms.length > 0 && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="h-7 px-0 text-xs text-primary"
+                      >
+                        More ways to say this
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="max-w-sm space-y-2 text-xs"
+                      side="bottom"
+                      align="end"
+                    >
+                      <p className="text-muted-foreground">Synonyms</p>
+                      <div className="flex flex-wrap gap-2">
+                        {variants.synonyms.map((syn, idx) => (
+                          <Button
+                            key={`${syn}-${idx}`}
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => {
+                              // Replace main input text with the chosen synonym
+                              setSourceText(syn);
+                              setTranslatedText("");
+                              setVariants(null);
+                              setActiveStyle("neutral");
+                            }}
+                          >
+                            {syn}
+                          </Button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+            )}
 
             {translatedText && !isTranslating && (
               <div className="flex items-center justify-end gap-1 border-t border-border/30 pt-3">

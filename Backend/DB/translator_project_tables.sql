@@ -1,9 +1,11 @@
 --Translation
 CREATE TABLE IF NOT EXISTS chats (
     id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     original_text TEXT NOT NULL,
     translated_text TEXT NOT NULL,
     target_language VARCHAR(10) NOT NULL,
+    is_favorite BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 SELECT * FROM chats;

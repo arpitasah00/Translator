@@ -279,8 +279,8 @@ const AuthForm = ({ showBackLink = true, onBack, onCompleted }) => {
                 {isLoading
                   ? "Please wait..."
                   : isSignUp
-                  ? "Create Account"
-                  : "Sign In"}
+                    ? "Create Account"
+                    : "Sign In"}
               </Button>
 
               <div className="relative my-4">
@@ -294,10 +294,15 @@ const AuthForm = ({ showBackLink = true, onBack, onCompleted }) => {
                 </div>
               </div>
 
-              <div id="google-signin-button" className="w-full flex justify-center" />
+              <div
+                id="google-signin-button"
+                className="w-full flex justify-center"
+              />
 
               <div className="border-t border-border/40 pt-4 text-center text-sm text-muted-foreground">
-                {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+                {isSignUp
+                  ? "Already have an account?"
+                  : "Don't have an account?"}{" "}
                 <button
                   type="button"
                   onClick={() => setIsSignUp(!isSignUp)}

@@ -1,6 +1,10 @@
 import { Check, ChevronDown, Search } from "lucide-react";
 import { useState } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -27,8 +31,12 @@ const LanguageSelector = ({ value, onChange, showDetect = false }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const languages = showDetect ? LANGUAGES : LANGUAGES.filter((l) => l.code !== "auto");
-  const filtered = languages.filter((l) => l.name.toLowerCase().includes(search.toLowerCase()));
+  const languages = showDetect
+    ? LANGUAGES
+    : LANGUAGES.filter((l) => l.code !== "auto");
+  const filtered = languages.filter((l) =>
+    l.name.toLowerCase().includes(search.toLowerCase()),
+  );
   const selected = LANGUAGES.find((l) => l.code === value);
 
   return (
@@ -66,7 +74,9 @@ const LanguageSelector = ({ value, onChange, showDetect = false }) => {
             >
               <span>{lang.flag}</span>
               <span className="flex-1 text-left">{lang.name}</span>
-              {value === lang.code && <Check className="h-3.5 w-3.5 text-primary" />}
+              {value === lang.code && (
+                <Check className="h-3.5 w-3.5 text-primary" />
+              )}
             </button>
           ))}
         </div>

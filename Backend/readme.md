@@ -1,12 +1,9 @@
-# We are creating the backend portions of this magnificent and public-usable project!
+# MultiLingo Backend
 
 1. **Install Python dependencies**
-	
-	pip install -r requirements.txt
-	
-	
+
+   pip install -r requirements.txt
+
 2. **Run the backend application**
-	
-	py backapp.py
-	
-\c chat_translator_db
+
+   py backapp.py
