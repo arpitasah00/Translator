@@ -19,7 +19,14 @@ from google.auth.transport import requests as google_requests
 
 
 app = Flask(__name__)
-CORS(app)
+
+# Allow frontend origins (local dev + Vercel) to call this API.
+allowed_origins = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "https://translator-phi-lemon.vercel.app",
+]
+CORS(app, resources={r"/*": {"origins": allowed_origins}})
 load_dotenv()
 
 
