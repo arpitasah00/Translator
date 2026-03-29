@@ -60,6 +60,7 @@ DB_NAME = os.environ.get("DB_NAME")
 DB_USER = os.environ.get("DB_USER")
 DB_PASSWORD = os.environ.get("DB_PASSWORD")
 
+# Global connection & cursor; will be (re)initialized on demand
 conn = psycopg2.connect(
     host=DB_HOST,
     port=DB_PORT,
@@ -68,6 +69,28 @@ conn = psycopg2.connect(
     password=DB_PASSWORD,
 )
 cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+
+def get_db():
+    """Ensure there is an open DB connection and cursor.
+
+    Render can close idle connections, so we recreate them when needed.
+    """
+    global conn, cursor
+
+    if conn is None or getattr(conn, "closed", 0) != 0:
+        conn = psycopg2.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+        )
+
+    if cursor is None or getattr(cursor, "closed", False):
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    return conn, cursor
 
 
 def get_current_user_id():
@@ -294,6 +317,7 @@ def contact():
 
 @app.route("/translate", methods=["POST"])
 def translate():
+    conn, cursor = get_db()
     data = request.json or {}
     message = data.get("message")
     target_language = data.get("target_language")
@@ -342,6 +366,7 @@ def translate_variants():
 
     Also saves the neutral variant to chats history for this user.
     """
+    conn, cursor = get_db()
     data = request.json or {}
     message = data.get("message")
     target_language = data.get("target_language")
@@ -389,6 +414,7 @@ def translate_variants():
 @app.route("/history", methods=["GET"])
 def get_history():
     """Return recent translations for the current user."""
+    conn, cursor = get_db()
     user_id = get_current_user_id()
     if user_id is None:
         return jsonify({"error": "Authentication required"}), 401
@@ -425,6 +451,7 @@ def get_history():
 @app.route("/history/<int:chat_id>/favorite", methods=["POST"])
 def toggle_favorite(chat_id: int):
     """Mark/unmark a translation as favorite for the current user."""
+    conn, cursor = get_db()
     user_id = get_current_user_id()
     if user_id is None:
         return jsonify({"error": "Authentication required"}), 401
@@ -456,6 +483,7 @@ def toggle_favorite(chat_id: int):
 @app.route("/history/<int:chat_id>", methods=["DELETE"])
 def delete_history_item(chat_id: int):
     """Delete a single history item (chat) for the current user."""
+    conn, cursor = get_db()
     user_id = get_current_user_id()
     if user_id is None:
         return jsonify({"error": "Authentication required"}), 401
@@ -481,6 +509,7 @@ def delete_history_item(chat_id: int):
 @app.route("/auth/google", methods=["POST"])
 def auth_google():
     """Authenticate a user via Google ID token and issue our JWT."""
+    conn, cursor = get_db()
     data = request.json or {}
     token = data.get("id_token")
 
@@ -531,13 +560,17 @@ def auth_google():
     except ValueError:
         return jsonify({"error": "Invalid Google token"}), 400
     except Exception as e:
-        conn.rollback()
+        try:
+            conn.rollback()
+        except Exception:
+            pass
         print("Google auth error:", e)
         return jsonify({"error": "Google auth failed"}), 500
 
 
 @app.route("/auth/signup", methods=["POST"])
 def signup():
+    conn, cursor = get_db()
     data = request.json or {}
     email = data.get("email", "").strip().lower()
     password = data.get("password", "")
@@ -578,13 +611,17 @@ def signup():
 
         return jsonify({"message": "Signup successful. Please verify OTP.", "requires_otp": True}), 201
     except Exception as e:
-        conn.rollback()
+        try:
+            conn.rollback()
+        except Exception:
+            pass
         print("Signup Error:", e)
         return jsonify({"error": "Signup failed"}), 500
 
 
 @app.route("/auth/verify-otp", methods=["POST"])
 def verify_otp():
+    conn, cursor = get_db()
     data = request.json or {}
     email = data.get("email", "").strip().lower()
     otp = data.get("otp", "")
@@ -643,13 +680,17 @@ def verify_otp():
             "token": access_token,
         })
     except Exception as e:
-        conn.rollback()
+        try:
+            conn.rollback()
+        except Exception:
+            pass
         print("Verify OTP Error:", e)
         return jsonify({"error": "OTP verification failed"}), 500
 
 
 @app.route("/auth/login", methods=["POST"])
 def login():
+    conn, cursor = get_db()
     data = request.json or {}
     email = data.get("email", "").strip().lower()
     password = data.get("password", "")
@@ -701,7 +742,10 @@ def login():
             "token": access_token,
         }), 200
     except Exception as e:
-        conn.rollback()
+        try:
+            conn.rollback()
+        except Exception:
+            pass
         print("Login Error:", e)
         return jsonify({"error": "Login failed"}), 500
 
