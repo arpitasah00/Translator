@@ -151,7 +151,8 @@ def send_otp_email(to_email: str, otp: str) -> bool:
             "This code will expire in 10 minutes. If you did not request this, you can ignore this email."
         )
 
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        # Use a short timeout so the worker does not hang if SMTP is unreachable
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
             if SMTP_USE_TLS:
                 server.starttls()
             server.login(SMTP_USER, SMTP_PASS)
@@ -191,7 +192,8 @@ def send_contact_email(name: str, from_email: str, message_body: str) -> bool:
             f"Name: {name}\nEmail: {from_email}\n\nMessage:\n{message_body}"
         )
 
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        # Use a short timeout so the worker does not hang if SMTP is unreachable
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
             if SMTP_USE_TLS:
                 server.starttls()
             server.login(SMTP_USER, SMTP_PASS)
@@ -344,7 +346,10 @@ def translate():
         row = cursor.fetchone()
         conn.commit()
     except Exception as e:
-        conn.rollback()
+        try:
+            conn.rollback()
+        except Exception:
+            pass
         print("DB Insert Error:", e)
         return jsonify({"error": "Failed to save translation"}), 500
 
@@ -394,7 +399,10 @@ def translate_variants():
         row = cursor.fetchone()
         conn.commit()
     except Exception as e:
-        conn.rollback()
+        try:
+            conn.rollback()
+        except Exception:
+            pass
         print("DB Insert Error (variants):", e)
         return jsonify({"error": "Failed to save translation"}), 500
 
@@ -475,7 +483,10 @@ def toggle_favorite(chat_id: int):
         conn.commit()
         return jsonify({"id": chat_id, "is_favorite": is_favorite})
     except Exception as e:
-        conn.rollback()
+        try:
+            conn.rollback()
+        except Exception:
+            pass
         print("Favorite toggle error:", e)
         return jsonify({"error": "Failed to update favorite"}), 500
 
@@ -501,7 +512,10 @@ def delete_history_item(chat_id: int):
         conn.commit()
         return jsonify({"id": chat_id, "deleted": True})
     except Exception as e:
-        conn.rollback()
+        try:
+            conn.rollback()
+        except Exception:
+            pass
         print("Delete history error:", e)
         return jsonify({"error": "Failed to delete history item"}), 500
 
