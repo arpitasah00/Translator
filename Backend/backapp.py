@@ -43,9 +43,9 @@ JWT_EXPIRES_MINUTES = int(os.environ.get("JWT_EXPIRES_MINUTES"))
 # Google OAuth
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 
-# Resend (email API) settings - preferred in production
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
-RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL")
+# Brevo (email API) settings - preferred in production
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
+BREVO_SENDER_EMAIL = os.environ.get("BREVO_SENDER_EMAIL")
 
 # PostgreSQL connection settings
 DB_HOST = os.environ.get("DB_HOST")
@@ -126,76 +126,77 @@ def create_access_token(user_id: int, email: str) -> str:
 
 
 def send_otp_email(to_email: str, otp: str) -> bool:
-    """Send OTP using Resend email API.
+    """Send OTP using Brevo email API.
 
     Returns True if sending looked successful, False otherwise.
     """
-    if not (RESEND_API_KEY and RESEND_FROM_EMAIL):
-        print("[OTP EMAIL] Resend not configured. OTP:", otp)
+    if not (BREVO_API_KEY and BREVO_SENDER_EMAIL):
+        print("[OTP EMAIL] Brevo not configured. OTP:", otp)
         return False
 
     try:
         payload = {
-            "from": RESEND_FROM_EMAIL,
-            "to": [to_email],
+            "sender": {"email": BREVO_SENDER_EMAIL, "name": "MultiLingo"},
+            "to": [{"email": to_email}],
             "subject": "Your MultiLingo verification code",
-            "text": (
+            "textContent": (
                 f"Your MultiLingo verification code is: {otp}\n\n"
                 "This code will expire in 10 minutes. If you did not request this, you can ignore this email."
             ),
         }
         headers = {
-            "Authorization": f"Bearer {RESEND_API_KEY}",
+            "api-key": BREVO_API_KEY,
             "Content-Type": "application/json",
         }
         resp = requests.post(
-            "https://api.resend.com/emails", json=payload, headers=headers, timeout=10
+            "https://api.brevo.com/v3/smtp/email", json=payload, headers=headers, timeout=10
         )
         if resp.status_code in (200, 201, 202):
-            print(f"[OTP EMAIL - RESEND] Sent OTP email to {to_email}")
+            print(f"[OTP EMAIL - BREVO] Sent OTP email to {to_email}")
             return True
         else:
-            print("[OTP EMAIL - RESEND ERROR]", resp.status_code, resp.text)
+            print("[OTP EMAIL - BREVO ERROR]", resp.status_code, resp.text)
             print(f"[OTP] Fallback OTP for {to_email}: {otp}")
             return False
     except Exception as e:
-        print("[OTP EMAIL - RESEND ERROR]", e)
+        print("[OTP EMAIL - BREVO ERROR]", e)
         print(f"[OTP] Fallback OTP for {to_email}: {otp}")
         return False
 
 
 def send_contact_email(name: str, from_email: str, message_body: str) -> bool:
-    """Send a contact form message to the site owner via Resend.
+    """Send a contact form message to the site owner via Brevo.
 
     Returns True if sending looked successful, False otherwise.
     """
-    if not (RESEND_API_KEY and RESEND_FROM_EMAIL):
-        print("[CONTACT EMAIL] Resend not configured.")
+    if not (BREVO_API_KEY and BREVO_SENDER_EMAIL):
+        print("[CONTACT EMAIL] Brevo not configured.")
         print(f"[CONTACT MESSAGE] From {name} <{from_email}>: {message_body}")
         return False
 
     try:
         subject_name = name or "MultiLingo contact form"
         payload = {
-            "from": RESEND_FROM_EMAIL,
-            "to": [RESEND_FROM_EMAIL],
+            "sender": {"email": BREVO_SENDER_EMAIL, "name": "MultiLingo"},
+            "to": [{"email": BREVO_SENDER_EMAIL}],
             "subject": f"New message from {subject_name}",
-            "text": f"Name: {name}\nEmail: {from_email}\n\nMessage:\n{message_body}",
+            "textContent": f"Name: {name}\nEmail: {from_email}\n\nMessage:\n{message_body}",
+            "replyTo": {"email": from_email or BREVO_SENDER_EMAIL},
         }
         headers = {
-            "Authorization": f"Bearer {RESEND_API_KEY}",
+            "api-key": BREVO_API_KEY,
             "Content-Type": "application/json",
         }
         resp = requests.post(
-            "https://api.resend.com/emails", json=payload, headers=headers, timeout=10
+            "https://api.brevo.com/v3/smtp/email", json=payload, headers=headers, timeout=10
         )
         if resp.status_code in (200, 201, 202):
-            print(f"[CONTACT EMAIL - RESEND] Sent contact email to {RESEND_FROM_EMAIL}")
+            print(f"[CONTACT EMAIL - BREVO] Sent contact email to {BREVO_SENDER_EMAIL}")
             return True
         else:
-            print("[CONTACT EMAIL - RESEND ERROR]", resp.status_code, resp.text)
+            print("[CONTACT EMAIL - BREVO ERROR]", resp.status_code, resp.text)
     except Exception as e:
-        print("[CONTACT EMAIL - RESEND ERROR]", e)
+        print("[CONTACT EMAIL - BREVO ERROR]", e)
 
     # Fallback: log message to server console
     print(f"[CONTACT MESSAGE FALLBACK] From {name} <{from_email}>: {message_body}")
