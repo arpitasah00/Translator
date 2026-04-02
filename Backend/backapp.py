@@ -12,8 +12,6 @@ import string
 import secrets
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
-import smtplib
-from email.message import EmailMessage
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 
@@ -35,13 +33,9 @@ JWT_EXPIRES_MINUTES = int(os.environ.get("JWT_EXPIRES_MINUTES"))
 # Google OAuth
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 
-# Email (SMTP) settings for sending OTPs
-SMTP_HOST = os.environ.get("SMTP_HOST")
-SMTP_PORT = int(os.environ.get("SMTP_PORT"))
-SMTP_USER = os.environ.get("SMTP_USER")
-SMTP_PASS = os.environ.get("SMTP_PASS")
-SMTP_FROM = os.environ.get("SMTP_FROM", SMTP_USER or "")
-SMTP_USE_TLS = os.environ.get("SMTP_USE_TLS", "true").lower() == "true"
+# Brevo email API settings
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
+BREVO_SENDER_EMAIL = os.environ.get("BREVO_SENDER_EMAIL")
 
 # PostgreSQL connection
 conn = psycopg2.connect(
@@ -92,77 +86,81 @@ def create_access_token(user_id: int, email: str) -> str:
 
 
 def send_otp_email(to_email: str, otp: str) -> bool:
-    """Send OTP to user's email using basic SMTP.
+    """Send OTP using Brevo email API.
 
     Returns True if sending looked successful, False otherwise.
     """
-    if not (SMTP_HOST and SMTP_USER and SMTP_PASS and SMTP_FROM):
-        # Fallback: no SMTP configured
-        print("[OTP EMAIL] SMTP not configured. OTP:", otp)
+    if not (BREVO_API_KEY and BREVO_SENDER_EMAIL):
+        print("[OTP EMAIL] Brevo not configured. OTP:", otp)
         return False
 
     try:
-        msg = EmailMessage()
-        msg["Subject"] = "Your MultiLingo verification code"
-        msg["From"] = SMTP_FROM
-        msg["To"] = to_email
-        msg.set_content(
-            f"Your MultiLingo verification code is: {otp}\n\n"
-            "This code will expire in 10 minutes. If you did not request this, you can ignore this email."
+        payload = {
+            "sender": {"email": BREVO_SENDER_EMAIL, "name": "MultiLingo"},
+            "to": [{"email": to_email}],
+            "subject": "Your MultiLingo verification code",
+            "textContent": (
+                f"Your MultiLingo verification code is: {otp}\n\n"
+                "This code will expire in 10 minutes. If you did not request this, you can ignore this email."
+            ),
+        }
+        headers = {
+            "api-key": BREVO_API_KEY,
+            "Content-Type": "application/json",
+        }
+        resp = requests.post(
+            "https://api.brevo.com/v3/smtp/email", json=payload, headers=headers, timeout=10
         )
-
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-            if SMTP_USE_TLS:
-                server.starttls()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.send_message(msg)
-
-        print(f"[OTP EMAIL] Sent OTP email to {to_email}")
-        return True
+        if resp.status_code in (200, 201, 202):
+            print(f"[OTP EMAIL - BREVO] Sent OTP email to {to_email}")
+            return True
+        else:
+            print("[OTP EMAIL - BREVO ERROR]", resp.status_code, resp.text)
+            print(f"[OTP] Fallback OTP for {to_email}: {otp}")
+            return False
     except Exception as e:
-        print("[OTP EMAIL ERROR]", e)
-        # Still log OTP to terminal as fallback
+        print("[OTP EMAIL - BREVO ERROR]", e)
         print(f"[OTP] Fallback OTP for {to_email}: {otp}")
         return False
 
 
 def send_contact_email(name: str, from_email: str, message_body: str) -> bool:
-    """Send a contact form message to the site owner via SMTP.
+    """Send a contact form message to the site owner via Brevo.
 
     Returns True if sending looked successful, False otherwise.
     """
-    if not (SMTP_HOST and SMTP_USER and SMTP_PASS and SMTP_FROM):
-        # Fallback: configuration missing, log message to server console
-        print("[CONTACT EMAIL] SMTP not configured.")
+    if not (BREVO_API_KEY and BREVO_SENDER_EMAIL):
+        print("[CONTACT EMAIL] Brevo not configured.")
         print(f"[CONTACT MESSAGE] From {name} <{from_email}>: {message_body}")
         return False
 
     try:
-        msg = EmailMessage()
         subject_name = name or "MultiLingo contact form"
-        msg["Subject"] = f"New message from {subject_name}"
-        msg["From"] = SMTP_FROM
-        # Send contact messages to the existing SMTP_FROM address
-        msg["To"] = SMTP_FROM
-        if from_email:
-            msg["Reply-To"] = from_email
-
-        msg.set_content(
-            f"Name: {name}\nEmail: {from_email}\n\nMessage:\n{message_body}"
+        payload = {
+            "sender": {"email": BREVO_SENDER_EMAIL, "name": "MultiLingo"},
+            "to": [{"email": BREVO_SENDER_EMAIL}],
+            "subject": f"New message from {subject_name}",
+            "textContent": f"Name: {name}\nEmail: {from_email}\n\nMessage:\n{message_body}",
+            "replyTo": {"email": from_email or BREVO_SENDER_EMAIL},
+        }
+        headers = {
+            "api-key": BREVO_API_KEY,
+            "Content-Type": "application/json",
+        }
+        resp = requests.post(
+            "https://api.brevo.com/v3/smtp/email", json=payload, headers=headers, timeout=10
         )
-
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-            if SMTP_USE_TLS:
-                server.starttls()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.send_message(msg)
-
-        print(f"[CONTACT EMAIL] Sent contact email from {from_email} to {SMTP_FROM}")
-        return True
+        if resp.status_code in (200, 201, 202):
+            print(f"[CONTACT EMAIL - BREVO] Sent contact email to {BREVO_SENDER_EMAIL}")
+            return True
+        else:
+            print("[CONTACT EMAIL - BREVO ERROR]", resp.status_code, resp.text)
     except Exception as e:
-        print("[CONTACT EMAIL ERROR]", e)
-        print(f"[CONTACT MESSAGE FALLBACK] From {name} <{from_email}>: {message_body}")
-        return False
+        print("[CONTACT EMAIL - BREVO ERROR]", e)
+
+    # Fallback: log message to server console
+    print(f"[CONTACT MESSAGE FALLBACK] From {name} <{from_email}>: {message_body}")
+    return False
 
 def translate_text(message, target_language):
     headers = {"Content-Type": "application/json"}
