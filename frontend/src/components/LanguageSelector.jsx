@@ -8,42 +8,30 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const LANGUAGES = [
-  { code: "auto", name: "Detect Language", flag: "🌐" },
-  { code: "en", name: "English", flag: "🇬🇧" },
-  { code: "es", name: "Spanish", flag: "🇪🇸" },
-  { code: "fr", name: "French", flag: "🇫🇷" },
-  { code: "de", name: "German", flag: "🇩🇪" },
-  { code: "it", name: "Italian", flag: "🇮🇹" },
-  { code: "pt", name: "Portuguese", flag: "🇧🇷" },
-  { code: "zh", name: "Chinese", flag: "🇨🇳" },
-  { code: "ja", name: "Japanese", flag: "🇯🇵" },
-  { code: "ko", name: "Korean", flag: "🇰🇷" },
-  { code: "ar", name: "Arabic", flag: "🇸🇦" },
-  { code: "hi", name: "Hindi", flag: "🇮🇳" },
-  { code: "or", name: "Odia", flag: "🇮🇳" },
-  { code: "bn", name: "Bengali", flag: "🇧🇩" },
-  { code: "sa", name: "Sanskrit", flag: "🇮🇳" },
-  { code: "te", name: "Telugu", flag: "🇮🇳" },
-  { code: "ta", name: "Tamil", flag: "🇮🇳" },
-  { code: "kn", name: "Kannada", flag: "🇮🇳" },
-  { code: "ru", name: "Russian", flag: "🇷🇺" },
-  { code: "tr", name: "Turkish", flag: "🇹🇷" },
-  { code: "nl", name: "Dutch", flag: "🇳🇱" },
-  { code: "sv", name: "Swedish", flag: "🇸🇪" },
-];
+// ✅ IMPORT from central file
+import { LANGUAGES } from "@/lib/languages";
 
-const LanguageSelector = ({ value, onChange, showDetect = false }) => {
+const LanguageSelector = ({
+  value,
+  onChange,
+  showDetect = false,
+  displayValue,
+}) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
+  // ✅ handle auto detect condition
   const languages = showDetect
     ? LANGUAGES
     : LANGUAGES.filter((l) => l.code !== "auto");
+
   const filtered = languages.filter((l) =>
-    l.name.toLowerCase().includes(search.toLowerCase()),
+    l.name.toLowerCase().includes(search.toLowerCase())
   );
-  const selected = LANGUAGES.find((l) => l.code === value);
+
+  const selected =
+    LANGUAGES.find((l) => l.code === displayValue) ||
+    LANGUAGES.find((l) => l.code === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -52,12 +40,14 @@ const LanguageSelector = ({ value, onChange, showDetect = false }) => {
           variant="ghost"
           className="h-10 gap-2 rounded-lg border border-border/50 bg-card px-3 font-body text-sm font-medium text-foreground hover:bg-accent/35"
         >
-          <span className="text-base">{selected?.flag}</span>
-          <span>{selected?.name}</span>
+          <span className="text-base">{selected?.flag || "🌐"}</span>
+          <span>{selected?.name || "Select Language"}</span>
           <ChevronDown className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
         </Button>
       </PopoverTrigger>
+
       <PopoverContent className="w-56 p-2" align="start">
+        {/* 🔍 Search */}
         <div className="relative mb-2">
           <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
           <Input
@@ -67,6 +57,8 @@ const LanguageSelector = ({ value, onChange, showDetect = false }) => {
             className="h-8 pl-8 text-sm"
           />
         </div>
+
+        {/* 📜 Language List */}
         <div className="max-h-56 overflow-y-auto">
           {filtered.map((lang) => (
             <button
@@ -80,6 +72,7 @@ const LanguageSelector = ({ value, onChange, showDetect = false }) => {
             >
               <span>{lang.flag}</span>
               <span className="flex-1 text-left">{lang.name}</span>
+
               {value === lang.code && (
                 <Check className="h-3.5 w-3.5 text-primary" />
               )}
@@ -91,5 +84,4 @@ const LanguageSelector = ({ value, onChange, showDetect = false }) => {
   );
 };
 
-export { LANGUAGES };
 export default LanguageSelector;

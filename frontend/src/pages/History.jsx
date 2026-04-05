@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Clock, ArrowRight, Copy, Star, StarOff, Trash2 } from "lucide-react";
+import { Clock, ArrowRight, Copy, Star, StarOff, Trash2, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,8 @@ const History = () => {
       const matchesSearch =
         !q ||
         (item.original || "").toLowerCase().includes(q) ||
-        (item.translated || "").toLowerCase().includes(q);
+        (item.translated || "").toLowerCase().includes(q) ||
+        (item.label || "").toLowerCase().includes(q);
       const matchesFavorite = !showFavoritesOnly || item.is_favorite;
       return matchesSearch && matchesFavorite;
     });
@@ -76,12 +77,16 @@ const History = () => {
 
   const handleToggleFavorite = async (item) => {
     const next = !item.is_favorite;
-    setItems((prev) => prev.map((x) => (x.id === item.id ? { ...x, is_favorite: next } : x)));
+    setItems((prev) =>
+      prev.map((x) => (x.history_key === item.history_key ? { ...x, is_favorite: next } : x))
+    );
     try {
-      await api.post(`/history/${item.id}/favorite`, { is_favorite: next });
+      await api.post(`/history/${item.item_type}/${item.id}/favorite`, { is_favorite: next });
     } catch (err) {
       setItems((prev) =>
-        prev.map((x) => (x.id === item.id ? { ...x, is_favorite: item.is_favorite } : x))
+        prev.map((x) =>
+          x.history_key === item.history_key ? { ...x, is_favorite: item.is_favorite } : x
+        )
       );
       toast({
         title: "Could not update favorite",
@@ -101,11 +106,10 @@ const History = () => {
   };
 
   const handleDelete = async (item) => {
-    const id = item.id;
     const previous = items;
-    setItems((prev) => prev.filter((x) => x.id !== id));
+    setItems((prev) => prev.filter((x) => x.history_key !== item.history_key));
     try {
-      await api.delete(`/history/${id}`);
+      await api.delete(`/history/${item.item_type}/${item.id}`);
       toast({ title: "Deleted from history" });
     } catch (err) {
       setItems(previous);
@@ -125,9 +129,11 @@ const History = () => {
             <div className="flex flex-1 items-center justify-between gap-3">
               <div>
                 <h1 className="font-display text-2xl font-bold text-foreground">
-                  Translation History
+                  Activity History
                 </h1>
-                <p className="text-sm text-muted-foreground">Your recent translations</p>
+                <p className="text-sm text-muted-foreground">
+                  Your recent translations and emotion analyses
+                </p>
               </div>
               <div className="flex items-center gap-3">
                 <Input
@@ -161,13 +167,13 @@ const History = () => {
           <div className="mt-2 max-h-[420px] space-y-3 overflow-y-auto pr-1">
             {!loading && !error && filteredItems.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                No translations yet. Start translating to see history here.
+                No history yet. Start translating or analyzing text to see activity here.
               </p>
             )}
 
             {filteredItems.map((item, i) => (
               <motion.div
-                key={item.id}
+                key={item.history_key || `${item.item_type}-${item.id}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
@@ -175,25 +181,51 @@ const History = () => {
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>Auto-detect</span>
-                    <ArrowRight className="h-3 w-3" />
-                    <span>{item.target_language}</span>
+                    {item.item_type === "analysis" ? (
+                      <>
+                        <Sparkles className="h-3 w-3" />
+                        <span>Emotion analysis</span>
+                        {item.provider && <span>{item.provider}</span>}
+                      </>
+                    ) : (
+                      <>
+                        <span>Auto-detect</span>
+                        <ArrowRight className="h-3 w-3" />
+                        <span>{item.target_language}</span>
+                      </>
+                    )}
                     {item.created_at && (
                       <span className="ml-2">{formatTimeAgo(item.created_at)}</span>
                     )}
                   </div>
+                  {item.item_type === "analysis" ? (
+                    <div className="mt-2 space-y-2">
+                      <p className="text-foreground">{item.original}</p>
+                      <div className="flex flex-wrap items-center gap-2 text-sm">
+                        <span className="rounded-full bg-accent px-2.5 py-1 font-medium text-accent-foreground">
+                          {item.label}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {Math.round(Number(item.score || 0) * 100)}% confidence
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
                   <div className="mt-1.5 flex items-baseline gap-3">
                     <p className="text-foreground">{item.original}</p>
                     <span className="text-muted-foreground">→</span>
                     <p className="font-medium text-primary">{item.translated}</p>
                   </div>
+                  )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
-                    onClick={() => handleCopy(item.translated)}
+                    onClick={() =>
+                      handleCopy(item.item_type === "analysis" ? item.original : item.translated)
+                    }
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -224,7 +256,8 @@ const History = () => {
 
           {!error && (
             <p className="mt-8 text-center text-sm text-muted-foreground">
-              Your translations are saved to your account so you can quickly find, copy, and favorite them later.
+              Your translations and emotion analyses are saved to your account so you can revisit
+              them later.
             </p>
           )}
         </motion.div>

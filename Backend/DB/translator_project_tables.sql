@@ -10,6 +10,19 @@ CREATE TABLE IF NOT EXISTS chats (
 );
 SELECT * FROM chats;
 
+CREATE TABLE IF NOT EXISTS emotion_analyses (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    source_text TEXT NOT NULL,
+    primary_emotion VARCHAR(50) NOT NULL,
+    confidence REAL NOT NULL DEFAULT 0,
+    emotions_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+    provider VARCHAR(100),
+    is_favorite BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+SELECT * FROM emotion_analyses;
+
 -- Users for login / signup
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
